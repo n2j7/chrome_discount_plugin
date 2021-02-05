@@ -1,0 +1,24 @@
+{
+  "name": "Discounts for team ",
+  "description": "Show Discounts depend on User Privileges",
+  "version": "1",
+  "minimum_chrome_version": "30",
+  "background": {
+    "scripts": ["bg.js"],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_title": "Show Discount",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "https://*/"
+  ],
+  "manifest_version": 2,
+  "icons": {
+    "128": "icon.png"
+  }
+}

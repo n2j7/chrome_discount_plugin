@@ -59,7 +59,7 @@ async function replacePrice(tab) {
 	let seller_detect_code = `(function(){
 		return document.querySelector('${seller_selector}').innerText.match(new RegExp('${seller_match}'));
 	})();`;
-	let seller_result = await asyncScript(tab.tabId, seller_detect_code);
+	let seller_result = await asyncScript(tab.id, seller_detect_code);
 	console.log('seller', seller_result);
 	if (!seller_result) return false;
 	setStage('seller', true);
@@ -77,7 +77,7 @@ async function replacePrice(tab) {
 			var el = document.querySelector('${price_selector}');
 			el.innerHTML = '${content} / ' + el.innerHTML;
 		})()`;
-		await asyncScript(tab.tabId, change_price_code);
+		await asyncScript(tab.id, change_price_code);
 	}
 	setStage('result', true);
 }

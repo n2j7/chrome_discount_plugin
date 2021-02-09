@@ -1,11 +1,25 @@
 #xDiscountInjection {
     color:#00bc52;
     display: inline-block;
+    position: relative;
     animation: 
         xDiscountInjectionZoomIn 300ms ease-in/** /, 
         xDiscountInjectionShake 2000ms ease-in-out 400ms infinite alternate;
         /**/
 }
+
+.xInjPreInfo,
+.xInjPostInfo{
+    position: absolute;
+    font-size: .4em;
+    right: 0;
+    text-align: right;
+    white-space: nowrap;
+    color: #333;
+}
+
+.xInjPreInfo{bottom: 100%}
+.xInjPostInfo{top: 100%}
 
 @keyframes xDiscountInjectionZoomIn {
     0% {

@@ -185,12 +185,23 @@ async function replacePrice(tab) {
 	// change price
 	if (price_info && price_info.minPrice) {
 		let price_selector = await getSettings('price_selector');
-		let content = `<span id="${INJ_NODE_ID}">${price_info.minPrice}</span>`;
+		let content = `<span id="${INJ_NODE_ID}"><span class="xInjPreInfo"></span>${price_info.minPrice}<span class="xInjPostInfo"></span></span>`;
 		let change_price_code = `(function(){ 
 			var el = document.querySelector('${price_selector}');
+			var p = el.innerHTML.replaceAll('&nbsp;','').replace(/\s+/gi,'');
 			el.innerHTML = '${content} / ' + el.innerHTML;
+			return parseInt(p);
 		})()`;
-		await asyncScript(tab.id, change_price_code);
+		const orig_price = await asyncScript(tab.id, change_price_code);
+		const discount = orig_price - price_info.minPrice;
+		const perc = Math.ceil(discount * 100 / orig_price);
+
+		let add_info_code = `(function(){ 
+			document.querySelector('.xInjPreInfo').innerHTML = '- ${discount}&nbsp;₴';
+			document.querySelector('.xInjPostInfo').innerHTML = '- ${perc}&nbsp;%';
+		})()`;
+		await asyncScript(tab.id, add_info_code);
+
 		setStage('result', true);
 	}
 	else {

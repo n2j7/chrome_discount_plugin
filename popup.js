@@ -35,6 +35,7 @@ function setStage(stage, state) {
 }
 
 async function replacePrice(tab) {
+	if (!tab || !tab.url) return; // ignore system windows
 	let code_selector = await getSettings('code_selector');
 	let id_part = await asyncScript(tab.id, `document.querySelector('${code_selector}').innerText`);
 	let id_searcher = id_part.match(/\d+/);

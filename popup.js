@@ -69,10 +69,13 @@ async function replacePrice(tab) {
 	console.log('price', price_info);
 	setStage('api', true);
 
+	// add extra styles
+	chrome.tabs.insertCSS(tab.id, { file: 'xDiscountInject.css' });
+
 	// change price
 	if (price_info && price_info.minPrice) {
 		let price_selector = await getSettings('price_selector');
-		let content = `<span id="${INJ_NODE_ID}" style="color:#00bc52">${price_info.minPrice}</span>`;
+		let content = `<span id="${INJ_NODE_ID}">${price_info.minPrice}</span>`;
 		let change_price_code = `(function(){ 
 			var el = document.querySelector('${price_selector}');
 			el.innerHTML = '${content} / ' + el.innerHTML;

@@ -1,7 +1,10 @@
 #xDiscountInjection {
     color:#00bc52;
     display: inline-block;
-    animation: xDiscountInjectionZoomIn 300ms ease-in;
+    animation: 
+        xDiscountInjectionZoomIn 300ms ease-in/** /, 
+        xDiscountInjectionShake 2000ms ease-in-out 400ms infinite alternate;
+        /**/
 }
 
 @keyframes xDiscountInjectionZoomIn {
@@ -12,5 +15,17 @@
 
     50% {
         opacity: 0.3;
+    }
+}
+
+@keyframes xDiscountInjectionShake{
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(.95);
+    }
+    100% {
+        transform: scale(1);
     }
 }

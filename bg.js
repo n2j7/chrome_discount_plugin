@@ -40,7 +40,9 @@ async function onTabLoadUrl(tab) {
 	let seller_selector = await getSettings('seller_selector');
 	let seller_match = await getSettings('seller_match');
 	let seller_detect_code = `(function(){
-		return document.querySelector('${seller_selector}').innerText.match(new RegExp('${seller_match}'));
+		var n = document.querySelector('${seller_selector}');
+		if (!n) return "";
+		return n.innerText.match(new RegExp('${seller_match}'));
 	})();`;
 	let seller_result = await asyncScript(tab.tabId, seller_detect_code);
 	console.log('seller', seller_result);

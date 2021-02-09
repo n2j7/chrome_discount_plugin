@@ -1,20 +1,110 @@
 <!doctype html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Title</title>
     <style>
-        body{white-space: nowrap; font-size: 14px;}
-        .confirm{color:#00bc52}
-        .err{color:#bc0000}
+        body {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .list{
+            padding: 0.5em 0.7em;
+        }
+
+        .confirm {
+            color: #00bc52
+        }
+
+        .err {
+            color: #ee0000
+        }
+
+        .fade {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -15px 0 0 -15px;
+            width: 30px;
+            height: 30px;
+            font-size: 0;
+            box-sizing: border-box;
+        }
+
+        .loading-in {
+            margin: auto;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-width: 3px;
+            border-style: solid;
+            border-radius: 50%;
+            position: absolute;
+            opacity: 0;
+            animation: pulsate 1s infinite ease-out;
+            display: inline-block;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            box-sizing: border-box;
+            border-color: #555;
+        }
+
+        @keyframes pulsate {
+            0% {
+                transform: scale(.1);
+                opacity: 0
+            }
+
+            50% {
+                opacity: 1
+            }
+
+            100% {
+                transform: scale(1.2);
+                opacity: 0
+            }
+        }
+
+        #err {
+            background: #ee0000;
+            color: #fff;
+            padding: 0.3em 0.7em;
+            display: none;
+        }
     </style>
 </head>
+
 <body>
-    <div id="settings">Настройки</div>
-    <div id="product">Код товара</div>
-    <div id="seller">Продавец</div>
-    <div id="api">API cпец цены</div>
-    <div id="result">Новая цена</div>
+    <div class="fade">
+        <div class="loading">
+            <span class="loading-in"></span>
+        </div>
+    </div>
+    <div class="list">
+        <div id="settings">Настройки</div>
+        <div id="product">Код товара</div>
+        <div id="seller">Продавец</div>
+        <div id="api">API cпец цены</div>
+        <div id="result">Новая цена</div>
+    </div>
+    <div id="err"></div>
     <script src="popup.js"></script>
 </body>
+
 </html>

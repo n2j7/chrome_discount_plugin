@@ -138,14 +138,14 @@ async function replacePrice(tab) {
 			return true;
 		})
 		.catch(err => {
-			console.log(err);
+			console.log(tab, err);
 			setStage('product', false, err);
 		});
 	if (!r) return;
 
 	r = await pr(isDiscountNotPlaced(tab))
 		.catch(err => {
-			console.log('placed', err);
+			console.log('placed', tab, err);
 			setStage('seller', true);
 			setStage('api', true);
 			setStage('result', true);
@@ -158,7 +158,7 @@ async function replacePrice(tab) {
 			return true;
 		})
 		.catch(err => {
-			console.log('seller', err);
+			console.log('seller', tab, err);
 			setStage('seller', false, err);
 		})
 		;
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	console.log('config ok?', is_config_ok);
 	if (!is_config_ok) return;
 
-	chrome.tabs.query({ active: true }, tabs => {
+	chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
 		tabs.map(replacePrice);
 	});
 });

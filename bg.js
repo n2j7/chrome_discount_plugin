@@ -53,10 +53,10 @@ async function onTabLoadUrl(tab) {
 
 async function changeIcon(is_active) {
 	if (is_active) {
-		chrome.browserAction.setIcon({ path: 'hot-price128.png' });
+		chrome.browserAction.setIcon({ path: 'active128.png' });
 	}
 	else {
-		chrome.browserAction.setIcon({ path: 'icon128.png' });
+		chrome.browserAction.setIcon({ path: 'inactive128.png' });
 	}
 }
 

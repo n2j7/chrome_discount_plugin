@@ -38,8 +38,33 @@ async function getSettingsArr(keys) {
 
 async function callDiscountApi(id) {
 	let api_url = await getSettings('api_url');
+	let price_path = await getSettings('price_path');
+
 	return fetch(`${api_url}${id}`)
-		.then(r => r.json());
+		.then(r => r.json())
+		.then(j => {
+			// get price inside json request
+			let parts = price_path.split('.');
+			console.log('price_path parts', parts);
+			let price = j;
+			parts.map(p => {
+				// is this part is array index
+				let array_matcher = p.match(/\[(\d+)\]/);
+
+				if (price && array_matcher) {
+					let idx = parseInt(array_matcher[1], 10);
+					price = price[idx];
+				}
+				else if (price && price[p]) {
+					price = price[p]; // go inside structure
+				}
+				else {
+					price = false;
+				}
+			});
+
+			return price;// false or float
+		});
 }
 
 function setStage(stage, state, err_msg) {
@@ -53,11 +78,11 @@ function setStage(stage, state, err_msg) {
 		// initialization
 		document.querySelector('.fade').style.display = '';
 		document.getElementById('err').innerHTML = '';
-		document.getElementById('err').style.display='';
+		document.getElementById('err').style.display = '';
 	}
 	if (err_msg) {
 		document.getElementById('err').innerHTML = err_msg;
-		document.getElementById('err').style.display='block';
+		document.getElementById('err').style.display = 'block';
 	}
 }
 
@@ -183,9 +208,9 @@ async function replacePrice(tab) {
 	chrome.tabs.insertCSS(tab.id, { file: 'xDiscountInject.css' });
 
 	// change price
-	if (price_info && price_info.minPrice) {
+	if (price_info) {
 		let price_selector = await getSettings('price_selector');
-		let content = `<span id="${INJ_NODE_ID}"><span class="xInjPreInfo"></span>${price_info.minPrice}<span class="xInjPostInfo"></span></span>`;
+		let content = `<span id="${INJ_NODE_ID}"><span class="xInjPreInfo"></span>${price_info}<span class="xInjPostInfo"></span></span>`;
 		let change_price_code = `(function(){ 
 			var el = document.querySelector('${price_selector}');
 			var p = el.innerHTML.replaceAll('&nbsp;','').replace(/\s+/gi,'');
@@ -193,7 +218,7 @@ async function replacePrice(tab) {
 			return parseInt(p);
 		})()`;
 		const orig_price = await asyncScript(tab.id, change_price_code);
-		const discount = orig_price - price_info.minPrice;
+		const discount = orig_price - price_info;
 		const perc = Math.ceil(discount * 100 / orig_price);
 
 		let add_info_code = `(function(){ 

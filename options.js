@@ -1,5 +1,6 @@
 const keys = [
 	'api_url',
+	'price_path',
 	'code_selector',
 	'seller_selector',
 	'seller_match',

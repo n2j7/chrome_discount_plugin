@@ -189,6 +189,14 @@ async function replacePrice(tab) {
 		;
 	if (!r) return;
 
+	// show API domain
+	let virtuallink = document.createElement("a");
+	virtuallink.href = await getSettings('api_url');
+	let dom_el = document.getElementById("api");
+	dom_el.innerHTML = `${dom_el.innerHTML} ${virtuallink.hostname}`;
+	delete virtuallink;
+	delete dom_el;
+
 	// get product price from API
 	const price_info = await callDiscountApi(product_id)
 		.then(p => {

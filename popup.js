@@ -36,13 +36,27 @@ async function getSettingsArr(keys) {
 	});
 }
 
+async function setSettings(key, val) {
+	chrome.storage.sync.set({[key]:val}, (r) => {
+		console.log('Options saved', key, val, r);
+	});
+}
+
 async function callDiscountApi(id) {
 	let api_url = await getSettings('api_url');
+	let antibot = await getSettings('antibot');
 	let price_path = await getSettings('price_path');
 
-	return fetch(`${api_url}${id}`)
+	api_url = api_url.replace('{C}', id);
+	api_url = api_url.replace('{X}', antibot);
+
+	console.log('Fetch', api_url);
+	return fetch(api_url)
 		.then(r => r.json())
 		.then(j => {
+			if (j.errors && j.errors.length) {
+				throw j.errors[0];
+			}
 			// get price inside json request
 			let parts = price_path.split('.');
 			console.log('price_path parts', parts);
@@ -149,6 +163,76 @@ const isCorrectSeller = (tab) => async () => {
 	return true;
 }
 
+const showAntibotCodeForm = (tab, product_id) => async () => {
+	let antibot_url = await getSettings('antibot_img_url');
+
+	let antibot_el = document.getElementById("antibot");
+	antibot_el.innerHTML = [
+		'<div>Антибот</div>',
+		'<img src="', antibot_url, '" class="pic" alt="antibot"/>',
+		'<div>',
+			'<input type="text" id="antibot_inp" class="inp" /> ',
+			'<button type="button" id="antibot_btn">OK</button>',
+		'</div>',
+	].join('');
+
+	let antibot_btn = document.getElementById("antibot_btn");
+	antibot_btn.addEventListener('click', async () => {
+		setStage(false, false);// drop err msg
+		setStage('antibot', true);
+		await setSettings('antibot', document.getElementById("antibot_inp").value);
+		antibot_el.innerHTML = 'Антибот';
+		await pr(askPriceAndReplace(tab, product_id));
+	})
+}
+
+const askPriceAndReplace = (tab, product_id) => async () => {
+	// get product price from API
+	const price_info = await callDiscountApi(product_id)
+		.then(p => {
+			console.log('price', p);
+			setStage('api', true);
+			return p;
+		})
+		.catch(err => {
+			console.log('api', err);
+			setSettings('antibot', null);
+			setStage('api', false, err || "API сервер недоступен");
+		})
+		;
+	// if (!price_info) return;
+
+
+	// add extra styles
+	chrome.tabs.insertCSS(tab.id, { file: 'xDiscountInject.css' });
+
+	// change price
+	if (price_info) {
+		let price_selector = await getSettings('price_selector');
+		let content = `<span id="${INJ_NODE_ID}"><span class="xInjPreInfo"></span>${price_info}<span class="xInjPostInfo"></span></span>`;
+		let change_price_code = `(function(){ 
+			var el = document.querySelector('${price_selector}');
+			var p = el.innerHTML.replaceAll('&nbsp;','').replace(/\s+/gi,'');
+			el.innerHTML = '${content} / ' + el.innerHTML;
+			return parseInt(p);
+		})()`;
+		const orig_price = await asyncScript(tab.id, change_price_code);
+		const discount = orig_price - price_info;
+		const perc = Math.ceil(discount * 100 / orig_price);
+
+		let add_info_code = `(function(){ 
+			document.querySelector('.xInjPreInfo').innerHTML = '- ${discount}&nbsp;₴';
+			document.querySelector('.xInjPostInfo').innerHTML = '- ${perc}&nbsp;%';
+		})()`;
+		await asyncScript(tab.id, add_info_code);
+
+		setStage('result', true);
+	}
+	else if(price_info === false) {
+		setStage('result', false, 'Нет другой цены');
+	}
+}
+
 async function replacePrice(tab) {
 	console.log('tab', tab);
 	if (!tab || !tab.url) return; // ignore system windows
@@ -197,49 +281,17 @@ async function replacePrice(tab) {
 	delete virtuallink;
 	delete dom_el;
 
-	// get product price from API
-	const price_info = await callDiscountApi(product_id)
-		.then(p => {
-			console.log('price', p);
-			setStage('api', true);
-			return p;
-		})
-		.catch(err => {
-			console.log('api', err);
-			setStage('api', false, "API сервер недоступен");
-		})
-		;
-	if (!price_info) return;
-
-
-	// add extra styles
-	chrome.tabs.insertCSS(tab.id, { file: 'xDiscountInject.css' });
-
-	// change price
-	if (price_info) {
-		let price_selector = await getSettings('price_selector');
-		let content = `<span id="${INJ_NODE_ID}"><span class="xInjPreInfo"></span>${price_info}<span class="xInjPostInfo"></span></span>`;
-		let change_price_code = `(function(){ 
-			var el = document.querySelector('${price_selector}');
-			var p = el.innerHTML.replaceAll('&nbsp;','').replace(/\s+/gi,'');
-			el.innerHTML = '${content} / ' + el.innerHTML;
-			return parseInt(p);
-		})()`;
-		const orig_price = await asyncScript(tab.id, change_price_code);
-		const discount = orig_price - price_info;
-		const perc = Math.ceil(discount * 100 / orig_price);
-
-		let add_info_code = `(function(){ 
-			document.querySelector('.xInjPreInfo').innerHTML = '- ${discount}&nbsp;₴';
-			document.querySelector('.xInjPostInfo').innerHTML = '- ${perc}&nbsp;%';
-		})()`;
-		await asyncScript(tab.id, add_info_code);
-
-		setStage('result', true);
+	// antibot validation
+	let antibot_url = await getSettings('antibot_img_url');
+	let antibot_code = await getSettings('antibot');
+	console.log('Antibot', antibot_url, antibot_code);
+	if (antibot_url && !antibot_code) {
+		r = await pr(showAntibotCodeForm(tab, product_id));
+		setStage('antibot', false, "Надо пройти проверку");
+		return;
 	}
-	else {
-		setStage('result', false, 'Нет другой цены');
-	}
+
+	await pr(askPriceAndReplace(tab, product_id));
 }
 
 // init on page load

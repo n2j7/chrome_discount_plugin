@@ -6,6 +6,8 @@ const keys = [
 	'seller_match',
 	'price_selector',
 	'domain_regexp',
+	'antibot_img_url',
+	'antibot',
 ];
 
 function saveOptions () {
